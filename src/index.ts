@@ -48,10 +48,16 @@ try {
   
     $$ npx wrangler@${wranglerVersion} pages publish "${directory}" --project-name="${projectName}" --branch="${branch}"
     `;
-
+		const formData = new FormData();
+		formData.append('branch', branch)
+		const params = new URLSearchParams();
+		params.append('branch', branch);
 		const response = await fetch(
 			`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`,
-			{ headers: { Authorization: `Bearer ${apiToken}` } }
+			{
+				headers: { Authorization: `Bearer ${apiToken}` },
+				body: params,
+			}
 		);
 		const {
 			result: [deployment],

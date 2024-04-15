@@ -13088,9 +13088,9 @@ var require_formdata = __commonJS({
         }
       }
     };
-    var FormData = _FormData;
-    __publicField(FormData, "name", "FormData");
-    FormData.prototype[Symbol.iterator] = FormData.prototype.entries;
+    var FormData2 = _FormData;
+    __publicField(FormData2, "name", "FormData");
+    FormData2.prototype[Symbol.iterator] = FormData2.prototype.entries;
     function makeEntry(name, value, filename) {
       name = Buffer.from(name).toString("utf8");
       if (typeof value === "string") {
@@ -13116,7 +13116,7 @@ var require_formdata = __commonJS({
         }
       }
     }
-    module2.exports = { FormData };
+    module2.exports = { FormData: FormData2 };
   }
 });
 
@@ -13127,7 +13127,7 @@ var require_body = __commonJS({
     var Busboy = require_lib4();
     var util = require_util();
     var { ReadableStreamFrom, toUSVString, isBlobLike } = require_util2();
-    var { FormData } = require_formdata();
+    var { FormData: FormData2 } = require_formdata();
     var { kState } = require_symbols2();
     var { webidl } = require_webidl();
     var { DOMException } = require_constants();
@@ -13377,7 +13377,7 @@ Content-Type: ${value.type || "application/octet-stream"}\r
             const headers = {};
             for (const [key, value] of this.headers)
               headers[key.toLowerCase()] = value;
-            const responseFormData = new FormData();
+            const responseFormData = new FormData2();
             let busboy;
             try {
               busboy = Busboy({ headers });
@@ -13437,7 +13437,7 @@ Content-Type: ${value.type || "application/octet-stream"}\r
             } catch (err) {
               throw Object.assign(new TypeError(), { cause: err });
             }
-            const formData = new FormData();
+            const formData = new FormData2();
             for (const [name, value] of entries) {
               formData.append(name, value);
             }
@@ -18771,7 +18771,7 @@ var require_response = __commonJS({
     } = require_constants();
     var { kState, kHeaders, kGuard, kRealm } = require_symbols2();
     var { webidl } = require_webidl();
-    var { FormData } = require_formdata();
+    var { FormData: FormData2 } = require_formdata();
     var { getGlobalOrigin } = require_global2();
     var { kHeadersList } = require_symbols();
     var assert = require("assert");
@@ -19066,7 +19066,7 @@ var require_response = __commonJS({
       ReadableStream
     );
     webidl.converters.FormData = webidl.interfaceConverter(
-      FormData
+      FormData2
     );
     webidl.converters.URLSearchParams = webidl.interfaceConverter(
       URLSearchParams
@@ -22096,9 +22096,16 @@ try {
   
     $$ npx wrangler@${wranglerVersion} pages publish "${directory}" --project-name="${projectName}" --branch="${branch}"
     `;
+    const formData = new FormData();
+    formData.append("branch", branch);
+    const params = new URLSearchParams();
+    params.append("branch", branch);
     const response = await (0, import_undici.fetch)(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`,
-      { headers: { Authorization: `Bearer ${apiToken}` } }
+      {
+        headers: { Authorization: `Bearer ${apiToken}` },
+        body: params
+      }
     );
     const {
       result: [deployment]
