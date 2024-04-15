@@ -59,6 +59,7 @@ try {
 				body: params,
 			}
 		);
+
 		const {
 			result: [deployment],
 		} = (await response.json()) as { result: Deployment[] };
