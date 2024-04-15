@@ -22100,6 +22100,7 @@ try {
     formData.append("branch", branch);
     const params = new URLSearchParams();
     params.append("branch", branch);
+    console.log(params);
     const response = await (0, import_undici.fetch)(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`,
       {
