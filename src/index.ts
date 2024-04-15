@@ -56,12 +56,10 @@ try {
 		const response = await fetch(
 			`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`,
 			{
-				method: "POST",
 				headers: { Authorization: `Bearer ${apiToken}` },
-				body: params,
 			}
 		);
-
+		console.log(response);
 		const {
 			result: [deployment],
 		} = (await response.json()) as { result: Deployment[] };
