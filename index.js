@@ -22103,6 +22103,7 @@ try {
     const response = await (0, import_undici.fetch)(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`,
       {
+        method: "POST",
         headers: { Authorization: `Bearer ${apiToken}` },
         body: params
       }
