@@ -42,8 +42,7 @@ try {
 			throw new Error("Failed to set production branch, API returned non-200");
 		}
 		console.log(json.latest_deployment);
-		console.log(json.latest_deployment.productionBranch);
-		console.log(json.result.production_branch);
+
 		summary.addRaw(`✅ Cloudflare Pages Production Branchの変更に成功しました。\n✨ ${json.latest_deployment.productionBranch}から${json.result.production_branch}に変更されました`);
 	}
 
