@@ -22126,6 +22126,7 @@ try {
       }
     );
     const json = await response.json();
+    console.log(json);
     if (response.status !== 200) {
       console.error(`Cloudflare API returned non-200: ${response.status}`);
       console.error(`API returned: ${json}`);
