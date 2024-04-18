@@ -34,14 +34,13 @@ try {
 			}
 		);
 		const json: any = await response.json();
-		console.log(json);
 		if (response.status !== 200) {
 			console.error(`Cloudflare API returned non-200: ${response.status}`);
 			console.error(`API returned: ${json}`);
 			summary.addRaw("❌ Cloudflare Pages Production Branchの変更に失敗しました。\n📝エラーコード: \(.errors[].code) \nエラーメッセージ: \(.errors[].message)");
 			throw new Error("Failed to set production branch, API returned non-200");
 		}
-		summary.addRaw(`✅ Cloudflare Pages Production Branchの変更に成功しました。\n✨ ${json.result.latest_deployment.productionBranch}から${json.result.production_branch}に変更されました`);
+		summary.addRaw(`✅ Cloudflare Pages Production Branchの変更に成功しました。\n✨ ${json.result.latest_deployment.production_branch}から${json.result.production_branch}に変更されました`);
 	}
 
 
