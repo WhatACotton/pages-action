@@ -33,14 +33,14 @@ try {
 				}),
 			}
 		);
+		const json: any = await response.json();
 		if (response.status !== 200) {
 			console.error(`Cloudflare API returned non-200: ${response.status}`);
-			const json = await response.text();
 			console.error(`API returned: ${json}`);
 			summary.addRaw("❌ Cloudflare Pages Production Branchの変更に失敗しました。\n📝エラーコード: \(.errors[].code) \nエラーメッセージ: \(.errors[].message)");
 			throw new Error("Failed to set production branch, API returned non-200");
 		}
-		summary.addRaw("✅ Cloudflare Pages Production Branchの変更に成功しました。\n✨ \(.result.latest_deployment.production_branch)から\(.result.production_branch)に変更されました");
+		summary.addRaw(`✅ Cloudflare Pages Production Branchの変更に成功しました。\n✨ ${json.latest_deployment.production_branch}から${json.result.production_branch}に変更されました`);
 	}
 
 
