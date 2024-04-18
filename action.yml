@@ -19,6 +19,9 @@ inputs:
   gitHubToken:
     description: "GitHub Token"
     required: false
+  productionBranch:
+    description: "The name of the branch you want to deploy to production"
+    required: false
   branch:
     description: "The name of the branch you want to deploy to"
     required: false

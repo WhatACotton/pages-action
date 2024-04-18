@@ -22061,6 +22061,46 @@ var src_default = shellac;
 var import_undici = __toESM(require_undici());
 var import_process = require("process");
 var import_node_path = __toESM(require("path"));
+
+// src/generateAlias.ts
+var invalidCharsRegex = /[^a-z0-9-]/g;
+var maxAliasLength = 28;
+var alphanum = "abcdefghijklmnopqrstuvwxyz0123456789";
+function generateBranchAlias(branch) {
+  let normalised = branch.toLowerCase().replace(invalidCharsRegex, "-");
+  if (normalised.length > maxAliasLength) {
+    normalised = normalised.substring(0, maxAliasLength);
+  }
+  normalised = trim(normalised, "-");
+  if (normalised === "") {
+    return `branch-${randAlphaNum(10)}`;
+  }
+  return normalised;
+}
+function trim(str, char) {
+  while (str.startsWith(char)) {
+    if (str.length === 1) {
+      return "";
+    }
+    str = str.substring(1);
+  }
+  while (str.endsWith(char)) {
+    if (str.length === 1) {
+      return "";
+    }
+    str = str.substring(0, str.length - 1);
+  }
+  return str;
+}
+function randAlphaNum(length) {
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += alphanum[Math.floor(Math.random() * alphanum.length)];
+  }
+  return result;
+}
+
+// src/index.ts
 try {
   const apiToken = (0, import_core.getInput)("apiToken", { required: true });
   const accountId = (0, import_core.getInput)("accountId", { required: true });
@@ -22068,8 +22108,32 @@ try {
   const directory = (0, import_core.getInput)("directory", { required: true });
   const gitHubToken = (0, import_core.getInput)("gitHubToken", { required: false });
   const branch = (0, import_core.getInput)("branch", { required: false });
+  const production_branch = (0, import_core.getInput)("productionBranch", { required: false });
   const workingDirectory = (0, import_core.getInput)("workingDirectory", { required: false });
   const wranglerVersion = (0, import_core.getInput)("wranglerVersion", { required: false });
+  const setProductionBranch = async () => {
+    const response = await (0, import_undici.fetch)(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
+      {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "application/json"
+        },
+        method: "PATCH",
+        body: JSON.stringify({
+          production_branch
+        })
+      }
+    );
+    if (response.status !== 200) {
+      console.error(`Cloudflare API returned non-200: ${response.status}`);
+      const json = await response.text();
+      console.error(`API returned: ${json}`);
+      import_core.summary.addRaw("\u274C Cloudflare Pages Production Branch\u306E\u5909\u66F4\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\n\u{1F4DD}\u30A8\u30E9\u30FC\u30B3\u30FC\u30C9: (.errors[].code) \n\u30A8\u30E9\u30FC\u30E1\u30C3\u30BB\u30FC\u30B8: (.errors[].message)");
+      throw new Error("Failed to set production branch, API returned non-200");
+    }
+    import_core.summary.addRaw("\u2705 Cloudflare Pages Production Branch\u306E\u5909\u66F4\u306B\u6210\u529F\u3057\u307E\u3057\u305F\u3002\n\u2728 (.result.latest_deployment.production_branch)\u304B\u3089(.result.production_branch)\u306B\u5909\u66F4\u3055\u308C\u307E\u3057\u305F");
+  };
   const getProject = async () => {
     const response = await (0, import_undici.fetch)(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
@@ -22094,7 +22158,7 @@ try {
       $ export CLOUDFLARE_ACCOUNT_ID="${accountId}"
     }
   
-    $$ npx wrangler@${wranglerVersion} pages publish "${directory}" --project-name="${projectName}" --branch="${branch}"
+    $$ npx wrangler@${wranglerVersion} pages deploy "${directory}" --project-name="${projectName}" --branch="${branch}"
     `;
     const formData = new FormData();
     formData.append("branch", branch);
@@ -22152,11 +22216,14 @@ try {
   };
   const createJobSummary = async ({ deployment, aliasUrl }) => {
     const deployStage = deployment.stages.find((stage) => stage.name === "deploy");
+    const generatedAlias = branch !== production_branch ? generateBranchAlias(branch) : "this URL was not generated because the branch is the production branch.";
     let status = "\u26A1\uFE0F  Deployment in progress...";
     if (deployStage?.status === "success") {
       status = "\u2705  Deploy successful!";
     } else if (deployStage?.status === "failure") {
       status = "\u{1F6AB}  Deployment failed";
+    } else {
+      status = "unexpected status";
     }
     await import_core.summary.addRaw(
       `
@@ -22167,11 +22234,12 @@ try {
 | **Last commit:**        | \`${deployment.deployment_trigger.metadata.commit_hash.substring(0, 8)}\` |
 | **Status**:             | ${status} |
 | **Preview URL**:        | ${deployment.url} |
-| **Branch Preview URL**: | ${aliasUrl} |
+| **Branch Preview URL**: | ${generatedAlias} |
       `
     ).write();
   };
   (async () => {
+    const result = await setProductionBranch();
     const project = await getProject();
     const productionEnvironment = githubBranch === project.production_branch || branch === project.production_branch;
     const environmentName = `${projectName} (${productionEnvironment ? "Production" : "Preview"})`;
