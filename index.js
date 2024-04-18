@@ -22215,17 +22215,24 @@ try {
       auto_inactive: false
     });
   };
+  const generateURL = (branch2, URL2) => {
+    if (!branch2) {
+      return "this URL was not generated because the branch is the production branch.";
+    }
+    const url = URL2.split(".");
+    url[0] = "https://" + branch2;
+    return url.join(".");
+  };
   const createJobSummary = async ({ deployment, aliasUrl }) => {
     const deployStage = deployment.stages.find((stage) => stage.name === "deploy");
-    const generatedAlias = branch !== production_branch ? generateBranchAlias(branch) : "this URL was not generated because the branch is the production branch.";
+    const generatedAlias = branch !== production_branch ? generateBranchAlias(branch) : void 0;
     let status = "\u26A1\uFE0F  Deployment in progress...";
     if (deployStage?.status === "success") {
       status = "\u2705  Deploy successful!";
     } else if (deployStage?.status === "failure") {
       status = "\u{1F6AB}  Deployment failed";
-    } else {
-      status = "unexpected status";
     }
+    const previewURL = generateURL(branch, deployment.url);
     await import_core.summary.addRaw(
       `
 # Deploying with Cloudflare Pages
@@ -22235,7 +22242,7 @@ try {
 | **Last commit:**        | \`${deployment.deployment_trigger.metadata.commit_hash.substring(0, 8)}\` |
 | **Status**:             | ${status} |
 | **Preview URL**:        | ${deployment.url} |
-| **Branch Preview URL**: | ${generatedAlias} |
+| **Branch Preview URL**: | ${previewURL} |
       `
     ).write();
   };

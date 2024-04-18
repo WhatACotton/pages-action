@@ -141,19 +141,24 @@ try {
 			auto_inactive: false,
 		});
 	};
-
+	const generateURL = (branch: string, URL: string): string => {
+		if (!branch) {
+			return "this URL was not generated because the branch is the production branch."
+		}
+		const url = URL.split(".");
+		url[0] = "https://" + branch;
+		return url.join(".")
+	}
 	const createJobSummary = async ({ deployment, aliasUrl }: { deployment: Deployment; aliasUrl: string }) => {
 		const deployStage = deployment.stages.find((stage) => stage.name === "deploy");
-		const generatedAlias: string = branch !== production_branch ? generateBranchAlias(branch) : "this URL was not generated because the branch is the production branch.";
+		const generatedAlias: string | undefined = branch !== production_branch ? generateBranchAlias(branch) : undefined;
 		let status = "⚡️  Deployment in progress...";
 		if (deployStage?.status === "success") {
 			status = "✅  Deploy successful!";
 		} else if (deployStage?.status === "failure") {
 			status = "🚫  Deployment failed";
-		} else {
-			status = "unexpected status";
 		}
-
+		const previewURL = generateURL(branch, deployment.url);
 		await summary
 			.addRaw(
 				`
@@ -164,7 +169,7 @@ try {
 | **Last commit:**        | \`${deployment.deployment_trigger.metadata.commit_hash.substring(0, 8)}\` |
 | **Status**:             | ${status} |
 | **Preview URL**:        | ${deployment.url} |
-| **Branch Preview URL**: | ${generatedAlias} |
+| **Branch Preview URL**: | ${previewURL} |
       `
 			)
 			.write();
