@@ -22134,7 +22134,7 @@ try {
       throw new Error("Failed to set production branch, API returned non-200");
     }
     import_core.summary.addRaw(`\u2705 Cloudflare Pages Production Branch\u306E\u5909\u66F4\u306B\u6210\u529F\u3057\u307E\u3057\u305F\u3002
-\u2728 ${json.latest_deployment.production_branch}\u304B\u3089${json.result.production_branch}\u306B\u5909\u66F4\u3055\u308C\u307E\u3057\u305F`);
+\u2728 ${json.latest_deployment.productionBranch}\u304B\u3089${json.result.production_branch}\u306B\u5909\u66F4\u3055\u308C\u307E\u3057\u305F`);
   };
   const getProject = async () => {
     const response = await (0, import_undici.fetch)(
